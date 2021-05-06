@@ -42,3 +42,16 @@ log.warning('your message')
 time | message | service | level
 ```
 
+Таблица из БД:
+
+```SQL
+create table table_name
+(
+    id       int auto_increment
+        primary key,
+    datetime datetime default CURRENT_TIMESTAMP not null,
+    message  varchar(255)                       not null,
+    service  varchar(255)                       not null,
+    level    varchar(255)                       not null
+);
+```
