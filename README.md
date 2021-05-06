@@ -18,7 +18,9 @@ from logs_class import DatabaseLog
 log = DatabaseLog('settings.ini')
 ```
 settings.ini заполняется из примера settings.example.ini
+
 Методы класса обозначают уровень лога от `INFO` до `CRITICAL`
+
 В параметр стоит написать описание ошибки:
 ```Python
 log.warning('your message')
