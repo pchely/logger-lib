@@ -15,9 +15,9 @@ from logs_class import DatabaseLog
 ### Работа с классом
 -создание экземпляра
 ```Python
-log = DatabaseLog('settings.ini')
+log = DatabaseLog('loggers.ini')
 ```
-settings.ini заполняется из примера settings.example.ini
+settings.ini заполняется из примера loggers.example.ini
 
 Методы класса обозначают уровень лога от `INFO` до `CRITICAL`
 
@@ -27,7 +27,7 @@ log.warning('your message')
 ```
 
 ### Принцип работы
-При создание экземпляра передается файл setting.ini
+При создание экземпляра передается файл loggers.ini
 
 [database] - данные, необходимые для подключение к БД
 
