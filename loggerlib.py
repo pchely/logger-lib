@@ -1,6 +1,7 @@
 import datetime
 import pymysql
 import configparser
+import os
 
 
 class DatabaseFileLogger:
@@ -12,7 +13,7 @@ class DatabaseFileLogger:
         self.__config = configparser.ConfigParser()
         self.__config.read(directory)
         self.__service = self.__config['service']['name']
-        self.__file = self.__config['file']['directory'] + '\\' + self.__config['file']['filename']
+        self.__file = os.path.join(self.__config['file']['directory'], self.__config['file']['filename'])
         self.__conn = pymysql.connect(
             host=self.__config['database']['host'],
             port=int(self.__config['database']['port']),
