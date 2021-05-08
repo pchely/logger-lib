@@ -1,7 +1,8 @@
-import datetime
-import pymysql
 import configparser
+import datetime
 import os
+
+import pymysql
 
 
 class DatabaseFileLogger:
@@ -28,7 +29,7 @@ class DatabaseFileLogger:
     def __db_write(self, level, message, time):
         logg = [(time, message, self.__service, level)]
         self.__cursor.executemany(
-            "INSERT INTO logs (datetime, message,  service, level) VALUES (%s,%s,%s,%s)", logg)
+            'INSERT INTO logs (datetime, message, service, level) VALUES (%s,%s,%s,%s)', logg)
         self.__conn.commit()
 
     def __file_write(self, level, message, time):
