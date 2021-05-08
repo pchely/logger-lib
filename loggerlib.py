@@ -3,7 +3,7 @@ import pymysql
 import configparser
 
 
-class DatabaseLog:
+class DatabaseFileLogger:
     __str = ''
     __file = ''
     __service = ''
