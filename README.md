@@ -43,9 +43,9 @@ filename = log.txt
 name = my-awesome-project
 
 [output]
-console=debug
-mysql=warning
-file=info
+console = debug
+mysql = warning
+file = info
 ```
 
 *Пустой параметр `directory` означает, что файл с логами будет сохранен в корне вашего проекта. Вы также можете указать
