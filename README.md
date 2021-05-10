@@ -20,7 +20,7 @@ create table table_name
 Установить библиотеку можно с помощью pip:
 
 ```shell
-pip install git+https://github.com/pchely/logger-lib.git
+pip install git+https://github.com/pchely/pchelog.git
 ```
 
 Создайте в корне своего проекта файл logger.ini и заполните его:
@@ -47,7 +47,7 @@ name = my-awesome-project
 Импортируйте класс логгера из библиотеки:
 
 ```python
-from loggerlib import DatabaseFileLogger
+from pchelog import DatabaseFileLogger
 
 log = DatabaseFileLogger('logger.ini')
 ```
