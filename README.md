@@ -64,7 +64,7 @@ log.critical('your message')
 ## Roadmap
 
 - [x] установка через pip
-- [ ] вывод логов в консоль
+- [x] вывод логов в консоль
 - [ ] выбор куда логировать: консоль/БД/файл
 - [ ] вывод в Slack Workflow Webhook
 - [ ] логи в отдельном файле с timestamp `log-timestamp.txt`
