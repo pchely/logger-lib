@@ -1,6 +1,8 @@
-# logger-lib
+# pchelog
 
-Библиотека с возможностью логирования в MySQL БД и в файл
+Библиотека с возможностью логирования в MySQL БД, файл и Slack Workflow Webhook.
+
+Пакет находится в разработке, не рекомендуется к использованию в production.
 
 ## Установка и использование
 
@@ -20,13 +22,13 @@ create table table_name
 Установить библиотеку можно с помощью pip:
 
 ```shell
-pip install git+https://github.com/pchely/logger-lib.git
+pip install git+https://github.com/pchely/pchelog.git
 ```
 
 Создайте в корне своего проекта файл logger.ini и заполните его:
 
 ```ini
-[database]
+[mysql]
 host = localhost
 port = 3306
 user = ivanlut
@@ -39,6 +41,11 @@ filename = log.txt
 
 [service]
 name = my-awesome-project
+
+[output]
+console = debug
+mysql = warning
+file = info
 ```
 
 *Пустой параметр `directory` означает, что файл с логами будет сохранен в корне вашего проекта. Вы также можете указать
@@ -47,14 +54,15 @@ name = my-awesome-project
 Импортируйте класс логгера из библиотеки:
 
 ```python
-from loggerlib import DatabaseFileLogger
+from pchelog import DatabaseFileLogger
 
 log = DatabaseFileLogger('logger.ini')
 ```
 
 И логируйте!
 
-```Python
+```python
+log.debug('your message')
 log.info('your message')
 log.warning('your message')
 log.error('your message')
@@ -64,5 +72,7 @@ log.critical('your message')
 ## Roadmap
 
 - [x] установка через pip
-- [ ] вывод логов в консоль
-- [ ] выбор куда логировать: консоль/БД/файл
+- [x] вывод логов в консоль
+- [x] выбор куда логировать: консоль/БД/файл
+- [ ] вывод в Slack Workflow Webhook
+- [ ] логи в отдельном файле с timestamp `log-timestamp.txt`

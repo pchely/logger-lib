@@ -1,11 +1,11 @@
 from setuptools import find_packages, setup
 
 setup(
-    name='loggerlib',
+    name='pchelog',
     packages=find_packages(),
-    version='0.1',
+    version='0.2',
     description='Библиотека с возможностью логирования в MySQL БД и в файл',
-    url='https://github.com/pchely/logger-lib',
+    url='https://github.com/pchely/pchelog',
     author='ivanlut',
     license='MIT',
     install_requires=['pymysql'],
