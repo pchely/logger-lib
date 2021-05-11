@@ -1,6 +1,8 @@
 import configparser
 import datetime
+import json
 import os
+import requests
 
 import pymysql
 
@@ -22,6 +24,7 @@ class Logger:
     __console_log = 50
     __file_log = -1
     __database_log = -1
+    __slack_log = -1
     __service = 'example'
     __file_mode = 'default'
 
@@ -32,6 +35,7 @@ class Logger:
             self.__console_log = self.__level[str(self.__config['output']['console'])]
             self.__file_log = self.__level[str(self.__config['output']['file'])]
             self.__database_log = self.__level[str(self.__config['output']['mysql'])]
+            self.__slack_log = self.__level[str(self.__config['output']['slack'])]
             self.__service = self.__config['service']['name']
             if self.__file_log != -1:
                 self.__file_mode = self.__config['file']['mode']
@@ -77,6 +81,11 @@ class Logger:
     def __console_write(self, level, message, time):
         print(f'{time} | {message} | {self.__service} | {level}')
 
+    def __slack_web_hook_write(self, level, message, time):
+        self.__str = str(time) + ' | ' + message + ' | ' + self.__service + ' | ' + level
+        slack_msg = {'message': self.__str}
+        requests.post(self.__config['slack']['web_hook_url'], data=json.dumps(slack_msg))
+
     def debug(self, message):
         time = datetime.datetime.now()
         if self.__console_log > 40:
@@ -85,6 +94,8 @@ class Logger:
             self.__db_write('DEBUG', message, time)
         if self.__file_log > 40:
             self.__file_write('DEBUG', message, time)
+        if self.__slack_log > 40:
+            self.__slack_web_hook_write('DEBUG', message, time)
 
     def info(self, message):
         time = datetime.datetime.now()
@@ -94,6 +105,8 @@ class Logger:
             self.__db_write('INFO', message, time)
         if self.__file_log > 30:
             self.__file_write('INFO', message, time)
+        if self.__slack_log > 30:
+            self.__slack_web_hook_write('INFO', message, time)
 
     def warning(self, message):
         time = datetime.datetime.now()
@@ -103,6 +116,8 @@ class Logger:
             self.__db_write('WARNING', message, time)
         if self.__file_log > 20:
             self.__file_write('WARNING', message, time)
+        if self.__slack_log > 20:
+            self.__slack_web_hook_write('WARNING', message, time)
 
     def error(self, message):
         time = datetime.datetime.now()
@@ -112,6 +127,8 @@ class Logger:
             self.__db_write('ERROR', message, time)
         if self.__file_log > 10:
             self.__file_write('ERROR', message, time)
+        if self.__slack_log > 10:
+            self.__slack_web_hook_write('ERROR', message, time)
 
     def critical(self, message):
         time = datetime.datetime.now()
@@ -121,3 +138,5 @@ class Logger:
             self.__db_write('CRITICAL', message, time)
         if self.__file_log > 0:
             self.__file_write('CRITICAL', message, time)
+        if self.__slack_log > 0:
+            self.__slack_web_hook_write('CRITICAL', message, time)
