@@ -6,14 +6,22 @@ import pymysql
 
 
 class Logger:
+    __level = {
+        'none': -1,
+        'debug': 50,
+        'info': 40,
+        'warning': 30,
+        'error': 20,
+        'critical': 10
+    }
     __name_time = ''
     __name = ''
     __str = ''
     __file = ''
     __file_time = ''
-    __console_log = 'True'
-    __file_log = 'none'
-    __database_log = 'none'
+    __console_log = 50
+    __file_log = -1
+    __database_log = -1
     __service = 'example'
     __file_mode = 'default'
 
@@ -21,12 +29,12 @@ class Logger:
         if directory != '':
             self.__config = configparser.ConfigParser()
             self.__config.read(directory)
-            self.__console_log = (self.__config['output']['console'])
-            self.__file_log = (self.__config['output']['file'])
-            self.__database_log = (self.__config['output']['mysql'])
+            self.__console_log = self.__level[str(self.__config['output']['console'])]
+            self.__file_log = self.__level[str(self.__config['output']['file'])]
+            self.__database_log = self.__level[str(self.__config['output']['mysql'])]
             self.__service = self.__config['service']['name']
-            self.__file_mode = self.__config['file']['mode']
-            if self.__file_log != 'none':
+            if self.__file_log != -1:
+                self.__file_mode = self.__config['file']['mode']
                 name_list = self.__config['file']['filename'].split('.')
                 name_list.remove('txt')
                 if self.__file_mode == 'current' or self.__file_mode == 'timestamp':
@@ -42,7 +50,7 @@ class Logger:
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
                     self.__f = open(self.__file, 'w')
-            if self.__database_log != 'none':
+            if self.__database_log != -1:
                 self.__conn = pymysql.connect(
                     host=self.__config['mysql']['host'],
                     port=int(self.__config['mysql']['port']),
@@ -71,45 +79,45 @@ class Logger:
 
     def debug(self, message):
         time = datetime.datetime.now()
-        if self.__console_log != 'none':
+        if self.__console_log > 40:
             self.__console_write('DEBUG', message, time)
-        if self.__database_log != 'none':
+        if self.__database_log > 40:
             self.__db_write('DEBUG', message, time)
-        if self.__file_log != 'none':
+        if self.__file_log > 40:
             self.__file_write('DEBUG', message, time)
 
     def info(self, message):
         time = datetime.datetime.now()
-        if self.__console_log != 'none':
+        if self.__console_log > 30:
             self.__console_write('INFO', message, time)
-        if self.__database_log != 'none':
+        if self.__database_log > 30:
             self.__db_write('INFO', message, time)
-        if self.__file_log != 'none':
+        if self.__file_log > 30:
             self.__file_write('INFO', message, time)
 
     def warning(self, message):
         time = datetime.datetime.now()
-        if self.__console_log != 'none':
+        if self.__console_log > 20:
             self.__console_write('WARNING', message, time)
-        if self.__database_log != 'none':
+        if self.__database_log > 20:
             self.__db_write('WARNING', message, time)
-        if self.__file_log != 'none':
+        if self.__file_log > 20:
             self.__file_write('WARNING', message, time)
 
     def error(self, message):
         time = datetime.datetime.now()
-        if self.__console_log != 'none':
+        if self.__console_log > 10:
             self.__console_write('ERROR', message, time)
-        if self.__database_log != 'none':
+        if self.__database_log > 10:
             self.__db_write('ERROR', message, time)
-        if self.__file_log != 'none':
+        if self.__file_log > 10:
             self.__file_write('ERROR', message, time)
 
     def critical(self, message):
         time = datetime.datetime.now()
-        if self.__console_log != 'none':
+        if self.__console_log > 0:
             self.__console_write('CRITICAL', message, time)
-        if self.__database_log != 'none':
+        if self.__database_log > 0:
             self.__db_write('CRITICAL', message, time)
-        if self.__file_log != 'none':
+        if self.__file_log > 0:
             self.__file_write('CRITICAL', message, time)
