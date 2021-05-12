@@ -82,7 +82,6 @@ class Logger:
         print(f'{time} | {message} | {self.__service} | {level}')
 
     def __slack_web_hook_write(self, level, message, time):
-        self.__str = str(time) + ' | ' + str(message) + ' | ' + self.__service + ' | ' + level
         slack_msg = {'timestamp': str(time),
                      'service': self.__service,
                      'level': level,
