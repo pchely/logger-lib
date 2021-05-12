@@ -2,9 +2,9 @@ import configparser
 import datetime
 import json
 import os
-import requests
 
 import pymysql
+import requests
 
 
 class Logger:
@@ -43,11 +43,11 @@ class Logger:
                 name_list.remove('txt')
                 if self.__file_mode == 'current' or self.__file_mode == 'timestamp':
                     create_time = datetime.datetime.now()
-                    self.__name_time = '.'.join(name_list) + '-'\
-                        + str(datetime.date.today()) + '-'\
-                        + str(create_time.hour) + '-'\
-                        + str(create_time.minute) + '-'\
-                        + str(create_time.second) + '.txt'
+                    self.__name_time = '.'.join(name_list) + '-' \
+                                       + str(datetime.date.today()) + '-' \
+                                       + str(create_time.hour) + '-' \
+                                       + str(create_time.minute) + '-' \
+                                       + str(create_time.second) + '.txt'
                     self.__file_time = os.path.join(self.__config['file']['directory'], self.__name_time)
                     self.__f_time = open(self.__file_time, 'w')
                 if self.__file_mode == 'default' or self.__file_mode == 'timestamp':
@@ -68,7 +68,7 @@ class Logger:
     def __db_write(self, level, message, time):
         logg = [(time, message, self.__service, level)]
         self.__cursor.executemany(
-            'INSERT INTO logs (datetime, message, service, level) VALUES (%s,%s,%s,%s)', logg)
+            'INSERT INTO logs (timestamp, message, service, level) VALUES (%s,%s,%s,%s)', logg)
         self.__conn.commit()
 
     def __file_write(self, level, message, time):
