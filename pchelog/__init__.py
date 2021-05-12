@@ -72,7 +72,7 @@ class Logger:
         self.__conn.commit()
 
     def __file_write(self, level, message, time):
-        self.__str = str(time) + ' | ' + message + ' | ' + self.__service + ' | ' + level + '\n'
+        self.__str = str(time) + ' | ' + str(message) + ' | ' + self.__service + ' | ' + level + '\n'
         if self.__file_mode == 'default' or self.__file_mode == 'timestamp':
             self.__f.write(self.__str)
         if self.__file_mode == 'current' or self.__file_mode == 'timestamp':
@@ -82,9 +82,12 @@ class Logger:
         print(f'{time} | {message} | {self.__service} | {level}')
 
     def __slack_web_hook_write(self, level, message, time):
-        self.__str = str(time) + ' | ' + message + ' | ' + self.__service + ' | ' + level
-        slack_msg = {'message': self.__str}
-        requests.post(self.__config['slack']['web_hook_url'], data=json.dumps(slack_msg))
+        self.__str = str(time) + ' | ' + str(message) + ' | ' + self.__service + ' | ' + level
+        slack_msg = {'timestamp': str(time),
+                     'service': self.__service,
+                     'level': level,
+                     'message': str(message)}
+        requests.post(self.__config['slack']['url'], data=json.dumps(slack_msg))
 
     def debug(self, message):
         time = datetime.datetime.now()
