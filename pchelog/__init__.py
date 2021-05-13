@@ -80,9 +80,10 @@ class Logger:
 
     def __file_write(self, level, message, time):
         self.__str = str(time) + ' | ' + str(message) + ' | ' + self.__service + ' | ' + level + '\n'
-        if self.__file_mode == 'default' or self.__file_mode == 'timestamp':
+        if self.__file_mode == 'default' or self.__file_mode == 'current':
             self.__f.write(self.__str)
-        if self.__file_mode == 'current' or self.__file_mode == 'timestamp':
+        if self.__file_mode == 'timestamp':
+            self.__f.write(self.__str)
             self.__f_time.write(self.__str)
 
     def __console_write(self, level, message, time):
