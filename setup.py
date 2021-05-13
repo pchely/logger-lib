@@ -9,6 +9,5 @@ setup(
     author='ivanlut',
     license='MIT',
     install_requires=['pymysql', 'requests'],
-    long_description=open('README.md').read(),
     zip_safe=False
 )
