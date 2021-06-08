@@ -51,6 +51,7 @@ port = 3306
 user = ivanlut
 password = passwd
 database = logs
+table = logs
 
 ; раздел не обязателен, если вывод в файл отключен
 [file]
