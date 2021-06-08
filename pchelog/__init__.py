@@ -75,7 +75,7 @@ class Logger:
     def __db_write(self, level, message, time):
         logg = [(time, message, self.__service, level)]
         self.__cursor.executemany(
-            'INSERT INTO %s (timestamp, message, service, level) VALUES (%s,%s,%s,%s)', self.__config['mysql']['table'], logg)
+            'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
         self.__conn.commit()
 
     def __file_write(self, level, message, time):
