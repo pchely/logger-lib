@@ -49,18 +49,18 @@ class Logger:
                                        + str(create_time.minute) + '-' \
                                        + str(create_time.second) + '.txt'
                     self.__file_time = os.path.join(self.__config['file']['directory'], self.__name_time)
-                    self.__f_time = open(self.__file_time, 'w')
+                    # self.__f_time = open(self.__file_time, 'w')
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
-                    self.__f = open(self.__file, 'w')
+                    # self.__f = open(self.__file, 'w')
                 if self.__file_mode == 'default':
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
-                    self.__f = open(self.__file, 'a')
+                    # self.__f = open(self.__file, 'a')
                 if self.__file_mode == 'current':
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
-                    self.__f = open(self.__file, 'w')
+                    # self.__f = open(self.__file, 'w')
             if self.__database_log != -1:
                 self.__conn = pymysql.connect(
                     host=self.__config['mysql']['host'],
@@ -80,11 +80,22 @@ class Logger:
 
     def __file_write(self, level, message, time):
         self.__str = str(time) + ' | ' + str(message) + ' | ' + self.__service + ' | ' + level + '\n'
-        if self.__file_mode == 'default' or self.__file_mode == 'current':
+        if self.__file_mode == 'default':
+            self.__f = open(self.__file, 'a')
             self.__f.write(self.__str)
+            self.__f.close()
+        if self.__file_mode == 'current':
+            self.__f = open(self.__file, 'w')
+            self.__f.write(self.__str)
+            self.__f.close()
         if self.__file_mode == 'timestamp':
-            self.__f.write(self.__str)
+            self.__f_time = open(self.__file_time, 'w')
             self.__f_time.write(self.__str)
+            self.__f_time.close()
+            self.__f = open(self.__file, 'w')
+            self.__f.write(self.__str)
+            self.__f.close()
+
 
     def __console_write(self, level, message, time):
         print(f'{time} | {message} | {self.__service} | {level}')
