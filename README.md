@@ -40,6 +40,10 @@ mysql = warning
 file = info
 slack = error
 
+; СУБД
+[typedatabase]
+type = postgres or mysql
+
 ; раздел не обязателен, если вывод в Slack отключен
 [slack]
 url = https://hooks.slack.com/workflows/123/12/123/123456
@@ -49,6 +53,15 @@ url = https://hooks.slack.com/workflows/123/12/123/123456
 host = localhost
 port = 3306
 user = ivanlut
+password = passwd
+database = logs
+table = logs
+
+; раздел не обязателен, если вывод в PostgreSQL отключен
+[postgres]
+host = localhost
+port = 5432
+user = postgres
 password = passwd
 database = logs
 table = logs
