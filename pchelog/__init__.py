@@ -35,10 +35,16 @@ class Logger:
             self.__config.read(directory)
             self.__console_log = self.__level[str(self.__config['output']['console'])]
             self.__file_log = self.__level[str(self.__config['output']['file'])]
-            self.__database_log = self.__level[str(self.__config['output']['mysql'])]
+            self.__type_db = self.__config['typedatabase']['type']
+            if self.__type_db == 'mysql':
+                self.__database_log = self.__level[str(self.__config['output']['mysql'])]
+            elif self.__type_db == 'postgres':
+                self.__database_log = self.__level[str(self.__config['output']['postgres'])]
+            elif self.__type_db == 'mysql_postgres':
+                self.__database_log = self.__level[str(self.__config['output']['postgres'])]
             self.__slack_log = self.__level[str(self.__config['output']['slack'])]
             self.__service = self.__config['service']['name']
-            self.__type_db = self.__config['typedatabase']['type']
+
             if self.__file_log != -1:
                 self.__file_mode = self.__config['file']['mode']
                 name_list = self.__config['file']['filename'].split('.')
@@ -60,55 +66,84 @@ class Logger:
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
             if self.__database_log != -1:
-                if self.__type_db == "mysql":
-                    self.__conn = pymysql.connect(
-                        host=self.__config['mysql']['host'],
-                        port=int(self.__config['mysql']['port']),
-                        user=self.__config['mysql']['user'],
-                        password=self.__config['mysql']['password'],
-                        database=self.__config['mysql']['database'],
-                        cursorclass=pymysql.cursors.DictCursor
-                    )
-                    self.__cursor = self.__conn.cursor()
-                if self.__type_db == "postgres":
-                    self.__conn = psycopg2.connect(dbname=self.__config['postgres']['database'],
+                self.__create_table(self.__type_db)
+
+
+    def __create_table(self,type_db):
+        self.__conn_mysql = pymysql.connect(
+                host=self.__config['mysql']['host'],
+                port=int(self.__config['mysql']['port']),
+                user=self.__config['mysql']['user'],
+                password=self.__config['mysql']['password'],
+                database=self.__config['mysql']['database'],
+                cursorclass=pymysql.cursors.DictCursor
+            )
+        self.__conn_postgres = psycopg2.connect(dbname=self.__config['postgres']['database'],
                                                    user=self.__config['postgres']['user'],
                                                    password=self.__config['postgres']['password'],
                                                    host=self.__config['postgres']['host'],
                                                    port=self.__config['postgres']['port'])
-                    self.__cursor = self.__conn.cursor()
+        if type_db == "mysql":
+            self.__cursor_mysql = self.__conn_mysql.cursor()
+            try:
+                self.__cursor_mysql.execute("CREATE TABLE {0} (id int auto_increment primary key,"
+                                      "timestamp datetime default CURRENT_TIMESTAMP not null,"
+                                      "message varchar(255) not null,"
+                                      "service varchar(255) not null,"
+                                      "level varchar(255) not null);".format(self.__config['mysql']['table']))
+                self.__conn_mysql.commit()
+            except:
+                self.__conn_mysql.rollback()
+        elif type_db == "postgres":
+                    self.__cursor_postgres = self.__conn_postgres.cursor()
+                    try:
+                        self.__cursor_postgres.execute("CREATE TABLE {0} (id serial primary key,"
+                                              "timestamp timestamp default CURRENT_TIMESTAMP not null,"
+                                              "message varchar(255) not null,"
+                                              "service varchar(255) not null,"
+                                              "level varchar(255) not null);".format(self.__config['postgres']['table']))
+                        self.__conn_postgres.commit()
+                    except:
+                        self.__conn_postgres.rollback()
+        elif type_db == "mysql_postgres":
+            self.__cursor_mysql = self.__conn_mysql.cursor()
+            self.__cursor_postgres = self.__conn_postgres.cursor()
+            try:
+                self.__cursor_mysql.execute("CREATE TABLE {0} (id int auto_increment primary key,"
+                                      "timestamp datetime default CURRENT_TIMESTAMP not null,"
+                                      "message varchar(255) not null,"
+                                      "service varchar(255) not null,"
+                                      "level varchar(255) not null);".format(self.__config['mysql']['table']))
+                self.__conn_mysql.commit()
+            except:
+                self.__conn_mysql.rollback()
 
+            try:
+                self.__cursor_postgres.execute("CREATE TABLE {0} (id serial primary key,"
+                                      "timestamp timestamp default CURRENT_TIMESTAMP not null,"
+                                      "message varchar(255) not null,"
+                                      "service varchar(255) not null,"
+                                      "level varchar(255) not null);".format(self.__config['postgres']['table']))
+                self.__conn_postgres.commit()
+            except:
+                self.__conn_postgres.rollback()
 
 
     def __db_write(self, level, message, time):
         logg = [(time, message, self.__service, level)]
         if self.__type_db == 'mysql':
-            try:
-                self.__cursor.execute("CREATE TABLE {0} (id int auto_increment primary key,"
-                                      "timestamp datetime default CURRENT_TIMESTAMP not null,"
-                                      "message varchar(255) not null,"
-                                      "service varchar(255) not null,"
-                                      "level varchar(255) not null);".format(self.__config['mysql']['table']))
-                self.__conn.commit()
-            except:
-                self.__conn.rollback()
-            finally:
-                self.__cursor.executemany(
-                    'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
-                self.__conn.commit()
+            self.__cursor_mysql.executemany(
+                'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
+            self.__conn_mysql.commit()
         if self.__type_db == 'postgres':
-            try:
-                self.__cursor.execute("CREATE TABLE {0} (id serial primary key,"
-                                      "timestamp timestamp default CURRENT_TIMESTAMP not null,"
-                                      "message varchar(255) not null,"
-                                      "service varchar(255) not null,"
-                                      "level varchar(255) not null);".format(self.__config['postgres']['table']))
-                self.__conn.commit()
-            except:
-                self.__conn.rollback()
-            finally:
-                self.__cursor.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
-                self.__conn.commit()
+            self.__cursor_postgres.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
+            self.__conn_postgres.commit()
+        if self.__type_db == 'mysql_postgres':
+            self.__cursor_mysql.executemany(
+                'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
+            self.__conn_mysql.commit()
+            self.__cursor_postgres.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
+            self.__conn_postgres.commit()
 
 
     def __file_write(self, level, message, time):
