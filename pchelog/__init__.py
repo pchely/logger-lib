@@ -24,7 +24,8 @@ class Logger:
     __file_time = ''
     __console_log = 50
     __file_log = -1
-    __database_log = -1
+    __database_log_mysql = -1
+    __database_log_postgres = -1
     __slack_log = -1
     __service = 'example'
     __file_mode = 'default'
@@ -36,12 +37,8 @@ class Logger:
             self.__console_log = self.__level[str(self.__config['output']['console'])]
             self.__file_log = self.__level[str(self.__config['output']['file'])]
             self.__type_db = self.__config['typedatabase']['type']
-            if self.__type_db == 'mysql':
-                self.__database_log = self.__level[str(self.__config['output']['mysql'])]
-            elif self.__type_db == 'postgres':
-                self.__database_log = self.__level[str(self.__config['output']['postgres'])]
-            elif self.__type_db == 'mysql_postgres':
-                self.__database_log = self.__level[str(self.__config['output']['postgres'])]
+            self.__database_log_mysql = self.__level[str(self.__config['output']['mysql'])]
+            self.__database_log_postgres = self.__level[str(self.__config['output']['postgres'])]
             self.__slack_log = self.__level[str(self.__config['output']['slack'])]
             self.__service = self.__config['service']['name']
 
@@ -65,7 +62,9 @@ class Logger:
                 if self.__file_mode == 'current':
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
-            if self.__database_log != -1:
+            if self.__database_log_mysql != -1:
+                self.__create_table(self.__type_db)
+            if self.__database_log_postgres != -1:
                 self.__create_table(self.__type_db)
 
 
@@ -129,21 +128,17 @@ class Logger:
                 self.__conn_postgres.rollback()
 
 
-    def __db_write(self, level, message, time):
+    def __db_write(self, level, message, time, db=None):
         logg = [(time, message, self.__service, level)]
-        if self.__type_db == 'mysql':
-            self.__cursor_mysql.executemany(
-                'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
-            self.__conn_mysql.commit()
-        if self.__type_db == 'postgres':
-            self.__cursor_postgres.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
-            self.__conn_postgres.commit()
-        if self.__type_db == 'mysql_postgres':
-            self.__cursor_mysql.executemany(
-                'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
-            self.__conn_mysql.commit()
-            self.__cursor_postgres.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
-            self.__conn_postgres.commit()
+        if db == 'mysql':
+            if self.__database_log_mysql != -1:
+                self.__cursor_mysql.executemany(
+                    'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
+                self.__conn_mysql.commit()
+        if db == 'postgres':
+            if self.__database_log_postgres != -1:
+                self.__cursor_postgres.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
+                self.__conn_postgres.commit()
 
 
     def __file_write(self, level, message, time):
@@ -179,8 +174,10 @@ class Logger:
         time = datetime.datetime.now()
         if self.__console_log > 40:
             self.__console_write('DEBUG', message, time)
-        if self.__database_log > 40:
-            self.__db_write('DEBUG', message, time)
+        if self.__database_log_mysql > 40:
+            self.__db_write('DEBUG', message, time, db='mysql')
+        if self.__database_log_postgres > 40:
+            self.__db_write('DEBUG', message, time, db='postgres')
         if self.__file_log > 40:
             self.__file_write('DEBUG', message, time)
         if self.__slack_log > 40:
@@ -190,8 +187,10 @@ class Logger:
         time = datetime.datetime.now()
         if self.__console_log > 30:
             self.__console_write('INFO', message, time)
-        if self.__database_log > 30:
-            self.__db_write('INFO', message, time)
+        if self.__database_log_mysql > 30:
+            self.__db_write('INFO', message, time, db='mysql')
+        if self.__database_log_postgres > 30:
+            self.__db_write('INFO', message, time, db='postgres')
         if self.__file_log > 30:
             self.__file_write('INFO', message, time)
         if self.__slack_log > 30:
@@ -201,8 +200,10 @@ class Logger:
         time = datetime.datetime.now()
         if self.__console_log > 20:
             self.__console_write('WARNING', message, time)
-        if self.__database_log > 20:
-            self.__db_write('WARNING', message, time)
+        if self.__database_log_mysql > 20:
+            self.__db_write('WARNING', message, time, db='mysql')
+        if self.__database_log_postgres > 20:
+            self.__db_write('WARNING', message, time, db='postgres')
         if self.__file_log > 20:
             self.__file_write('WARNING', message, time)
         if self.__slack_log > 20:
@@ -212,8 +213,10 @@ class Logger:
         time = datetime.datetime.now()
         if self.__console_log > 10:
             self.__console_write('ERROR', message, time)
-        if self.__database_log > 10:
-            self.__db_write('ERROR', message, time)
+        if self.__database_log_mysql > 10:
+            self.__db_write('ERROR', message, time, db='mysql')
+        if self.__database_log_postgres > 10:
+            self.__db_write('ERROR', message, time, db='postgres')
         if self.__file_log > 10:
             self.__file_write('ERROR', message, time)
         if self.__slack_log > 10:
@@ -223,8 +226,10 @@ class Logger:
         time = datetime.datetime.now()
         if self.__console_log > 0:
             self.__console_write('CRITICAL', message, time)
-        if self.__database_log > 0:
-            self.__db_write('CRITICAL', message, time)
+        if self.__database_log_mysql > 0:
+            self.__db_write('CRITICAL', message, time, db='mysql')
+        if self.__database_log_postgres > 0:
+            self.__db_write('CRITICAL', message, time, db='postgres')
         if self.__file_log > 0:
             self.__file_write('CRITICAL', message, time)
         if self.__slack_log > 0:
