@@ -83,9 +83,19 @@ class Logger:
     def __db_write(self, level, message, time):
         logg = [(time, message, self.__service, level)]
         if self.__type_db == 'mysql':
-            self.__cursor.executemany(
-                'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
-            self.__conn.commit()
+            try:
+                self.__cursor.execute("CREATE TABLE {0} (id int auto_increment primary key,"
+                                      "timestamp datetime default CURRENT_TIMESTAMP not null,"
+                                      "message varchar(255) not null,"
+                                      "service varchar(255) not null,"
+                                      "level varchar(255) not null);".format(self.__config['mysql']['table']))
+                self.__conn.commit()
+            except:
+                self.__conn.rollback()
+            finally:
+                self.__cursor.executemany(
+                    'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
+                self.__conn.commit()
         if self.__type_db == 'postgres':
             try:
                 self.__cursor.execute("CREATE TABLE {0} (id serial primary key,"
