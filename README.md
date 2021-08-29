@@ -1,6 +1,6 @@
 # pchelog
 
-Библиотека с возможностью логирования в MySQL БД, файл и Slack Workflow Webhook.
+Библиотека с возможностью логирования в MySQL, PostgreSQL, файл и Slack Workflow Webhook.
 
 Пакет находится в разработке, не рекомендуется к использованию в production.
 
