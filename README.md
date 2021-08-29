@@ -37,12 +37,13 @@ name = my-awesome-project
 [output]
 console = debug
 mysql = warning
+postgres = info
 file = info
 slack = error
 
 ; СУБД
 [typedatabase]
-type = postgres or mysql
+type = mysql, postgres, mysql_postgres(логи записываются в обе БД)
 
 ; раздел не обязателен, если вывод в Slack отключен
 [slack]
