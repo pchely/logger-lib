@@ -4,6 +4,7 @@ import json
 import os
 
 import pymysql
+import psycopg2
 import requests
 
 
@@ -37,6 +38,7 @@ class Logger:
             self.__database_log = self.__level[str(self.__config['output']['mysql'])]
             self.__slack_log = self.__level[str(self.__config['output']['slack'])]
             self.__service = self.__config['service']['name']
+            self.__type_db = self.__config['typedatabase']['type']
             if self.__file_log != -1:
                 self.__file_mode = self.__config['file']['mode']
                 name_list = self.__config['file']['filename'].split('.')
@@ -62,21 +64,37 @@ class Logger:
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
                     # self.__f = open(self.__file, 'w')
             if self.__database_log != -1:
-                self.__conn = pymysql.connect(
-                    host=self.__config['mysql']['host'],
-                    port=int(self.__config['mysql']['port']),
-                    user=self.__config['mysql']['user'],
-                    password=self.__config['mysql']['password'],
-                    database=self.__config['mysql']['database'],
-                    cursorclass=pymysql.cursors.DictCursor
-                )
-                self.__cursor = self.__conn.cursor()
+                if self.__type_db == "mysql":
+                    self.__conn = pymysql.connect(
+                        host=self.__config['mysql']['host'],
+                        port=int(self.__config['mysql']['port']),
+                        user=self.__config['mysql']['user'],
+                        password=self.__config['mysql']['password'],
+                        database=self.__config['mysql']['database'],
+                        cursorclass=pymysql.cursors.DictCursor
+                    )
+                    self.__cursor = self.__conn.cursor()
+                if self.__type_db == "postgres":
+                    self.__conn = psycopg2.connect(dbname=self.__config['postgres']['database'],
+                                                   user=self.__config['postgres']['user'],
+                                                   password=self.__config['postgres']['password'],
+                                                   host=self.__config['postgres']['host'],
+                                                   port=self.__config['postgres']['port'])
+                    self.__cursor = self.__conn.cursor()
+
+
 
     def __db_write(self, level, message, time):
         logg = [(time, message, self.__service, level)]
-        self.__cursor.executemany(
-            'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
-        self.__conn.commit()
+        if self.__type_db == 'mysql':
+            self.__cursor.executemany(
+                'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
+            self.__conn.commit()
+        if self.__type_db == 'postgres':
+            self.__cursor.execute(f"INSERT INTO {self.__config['postgres']['table']} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)",logg)
+            self.__conn.commit()
+            self.__conn.close()
+
 
     def __file_write(self, level, message, time):
         self.__str = str(time) + ' | ' + str(message) + ' | ' + self.__service + ' | ' + level + '\n'
