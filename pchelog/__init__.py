@@ -87,8 +87,18 @@ class Logger:
                 'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
             self.__conn.commit()
         if self.__type_db == 'postgres':
-            self.__cursor.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
-            self.__conn.commit()
+            try:
+                self.__cursor.execute("CREATE TABLE {0} (id serial primary key,"
+                                      "timestamp timestamp default CURRENT_TIMESTAMP not null,"
+                                      "message varchar(255) not null,"
+                                      "service varchar(255) not null,"
+                                      "level varchar(255) not null);".format(self.__config['postgres']['table']))
+                self.__conn.commit()
+            except:
+                self.__conn.rollback()
+            finally:
+                self.__cursor.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
+                self.__conn.commit()
 
 
     def __file_write(self, level, message, time):
