@@ -51,18 +51,14 @@ class Logger:
                                        + str(create_time.minute) + '-' \
                                        + str(create_time.second) + '.txt'
                     self.__file_time = os.path.join(self.__config['file']['directory'], self.__name_time)
-                    # self.__f_time = open(self.__file_time, 'w')
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
-                    # self.__f = open(self.__file, 'w')
                 if self.__file_mode == 'default':
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
-                    # self.__f = open(self.__file, 'a')
                 if self.__file_mode == 'current':
                     self.__name = '.'.join(name_list) + '.txt'
                     self.__file = os.path.join(self.__config['file']['directory'], self.__name)
-                    # self.__f = open(self.__file, 'w')
             if self.__database_log != -1:
                 if self.__type_db == "mysql":
                     self.__conn = pymysql.connect(
@@ -91,9 +87,8 @@ class Logger:
                 'INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['mysql']['table']), logg)
             self.__conn.commit()
         if self.__type_db == 'postgres':
-            self.__cursor.execute(f"INSERT INTO {self.__config['postgres']['table']} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)",logg)
+            self.__cursor.executemany('INSERT INTO {0} (timestamp, message, service, level) VALUES (%s,%s,%s,%s)'.format(self.__config['postgres']['table']), logg)
             self.__conn.commit()
-            self.__conn.close()
 
 
     def __file_write(self, level, message, time):
